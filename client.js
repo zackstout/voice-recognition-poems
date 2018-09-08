@@ -10,9 +10,9 @@ recognition.language = 'en';
 var speaking = false;
 
 recognition.start();
-recognition.onstart = function() {
-
-};
+// recognition.onstart = function() {
+//
+// };
 
 recognition.onresult = function(event) {
   var text = event.results[event.results.length - 1][0].transcript;
