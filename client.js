@@ -1,8 +1,8 @@
 
+var voices;
 
-// console.log('hi');
 var recognition = new webkitSpeechRecognition();
-// console.log(recognition);
+
 recognition.continuous = true;
 recognition.interimResults = true;
 recognition.language = 'en';
@@ -10,9 +10,15 @@ recognition.language = 'en';
 var speaking = false;
 
 recognition.start();
-// recognition.onstart = function() {
-//
-// };
+
+// The voices load async, so we listen on this event to populate voices array:
+window.speechSynthesis.onvoiceschanged = function() {
+  voices = window.speechSynthesis.getVoices();
+  console.log(voices);
+  voices = voices.filter(v => v.lang.includes('en'));
+  console.log(voices);
+};
+
 
 recognition.onresult = function(event) {
   var text = event.results[event.results.length - 1][0].transcript;
@@ -30,6 +36,8 @@ recognition.onresult = function(event) {
     if (msg_text) {
       speaking = true;
       var msg = new SpeechSynthesisUtterance(msg_text);
+      msg.voice = voices[4];
+
       window.speechSynthesis.speak(msg); // how do we determine if done speaking?
     }
     // console.log('reading');
@@ -37,6 +45,15 @@ recognition.onresult = function(event) {
   }
 
 };
+// };
+
+// console.log('hi');
+
+// recognition.onstart = function() {
+//
+// };
+
+
 // recognition.onerror = function(event) { ... }
 // recognition.onend = function() {
 //   console.log(event.results[event.results.length - 1][0].transcript);
