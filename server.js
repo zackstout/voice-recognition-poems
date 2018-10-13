@@ -32,9 +32,9 @@ router.get('/titles/:author', function (req, res) {
         } else {
 
             // We just need to take the result of this query, and update each poem ID to have author_id of the relevant author:
-            var queryText = `SELECT title FROM poems WHERE author_id=${req.params.author};`;
+            var queryText = 'SELECT title FROM poems WHERE author_id=$1;';
 
-            db.query(queryText, function (errQ, result) {
+            db.query(queryText, [req.params.author], function (errQ, result) {
                 done(); // pool +1
                 if (errQ) {
                     console.log('Error making query', errQ);
@@ -57,6 +57,28 @@ router.get('/poem/:id', function (req, res) {
 
             // We just need to take the result of this query, and update each poem ID to have author_id of the relevant author:
             var queryText = `SELECT * FROM lines WHERE poem_id=${req.params.id};`;
+
+            db.query(queryText, function (errQ, result) {
+                done(); // pool +1
+                if (errQ) {
+                    console.log('Error making query', errQ);
+                    res.sendStatus(500);
+                } else {
+                    res.send(result.rows);
+                }
+            });
+        }
+    });
+});
+
+
+router.get('/author_names', function (req, res) {
+    pool.connect(function (errD, db, done) {
+        if (errD) {
+            console.log('Error connecting', errD);
+            res.sendStatus(500);
+        } else {
+            var queryText = 'SELECT DISTINCT ON (author) author FROM poems;';
 
             db.query(queryText, function (errQ, result) {
                 done(); // pool +1
@@ -114,9 +136,11 @@ router.get('/authors', function (req, res) {
 
                             queryText = 'UPDATE poems SET author_id = $1 WHERE id = $2;';
 
-                            db.query(queryText, [author_id, poem.poem_id], (err2, res2) => {
-                                if (err2) console.log(err2);
-                            });
+                            db.query(queryText,
+                                [author_id, poem.poem_id],
+                                (err2, res2) => {
+                                    if (err2) console.log(err2);
+                                });
                         });
                     });
 
@@ -148,7 +172,9 @@ router.get('/all_authors', function (req, res) {
 
                     result.rows.forEach(author => {
                         queryText = 'INSERT INTO authors (name) VALUES ($1);';
-                        db.query(queryText, [author.author], (err, res) => { if (err) console.log(err); });
+                        db.query(queryText,
+                            [author.author],
+                            (err, res) => { if (err) console.log(err); });
                     });
 
                     res.send(result.rows);
