@@ -16,13 +16,13 @@ window.speechSynthesis.onvoiceschanged = function() {
   voices = voices.filter(v => v.lang.includes('en'));
 };
 
-
+// It seems that this isn't being called once the computer is speaking..
 recognition.onresult = function(event) {
   var text = event.results[event.results.length - 1][0].transcript;
   console.log(text);
 
   if (text.trim().toLowerCase() == 'exit') {
-    speaker.cancel();
+    speaker.cancel(); // Technically works; but only once we refresh, and then it's also listening to everything that it is saying -- because it's coming through the speaker!
   }
 
   if (!speaking_mode) {
@@ -42,21 +42,15 @@ recognition.onresult = function(event) {
       msg.voice = voices[4];
 
       speaker.speak(msg); // how do we determine if done speaking? See above!
+
+      // recognition.stop();
     }
   }
 
 };
 
+// YES!, this is what we need! To listen for vocal input while in the middle of the computer's speech!
+recognition.audiostart = function() {
+  console.log('ahoy hoy!');
+};
 
-// recognition.onstart = function() {
-//
-// };
-
-
-// recognition.onerror = function(event) { ... }
-// recognition.onend = function() {
-//   console.log(event.results[event.results.length - 1][0].transcript);
-//
-//   var msg = new SpeechSynthesisUtterance('Hello World');
-//   window.speechSynthesis.speak(msg);
-// };
